@@ -35,7 +35,7 @@ typedef struct hash* Hash;
 int CRT_HASH(Hash* hash_ptr, depth_t pg_inicial, char* hdir);
 int SRCH_HASH(Hash hash, char * chave, Registro reg);
 int INST_HASH(Hash hash, Registro reg);
-int RMV_HASH(Hash hash, char * chave, Registro reg);
+//int RMV_HASH(Hash hash, entry_number_t chave, Registro reg);
 int PRNT_HASH(Hash hash);
 int PERSISTE_DIR(Hash hash);
 int RECUPERA_DIR(Hash *hash_ptr, directory_size_t tam, bucket_size_t bs, bucket_t bn, depth_t depth, directory_t dir_t, char* hdir);

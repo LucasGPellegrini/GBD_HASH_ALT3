@@ -301,7 +301,7 @@ int INST_HASH(Hash hash, Registro reg){
 }
 
 // Precisa remover nos dois arquivos, caso encontrar o registro.
-int RMV_HASH(Hash hash, char * chave, Registro reg){
+/*int RMV_HASH(Hash hash, entry_number_t chave, Registro reg){
     if(_NVLD_HASH(hash) || reg == NULL) return 0;
 
     // Abre o arquivo hash
@@ -312,40 +312,19 @@ int RMV_HASH(Hash hash, char * chave, Registro reg){
 
     fseek(hash->fp, hash->dr[bucket].bucket, SEEK_SET);
 
-    struct indice aux;
-    struct indice vazio;
-    long int offset;
-    strcpy(vazio.key, "");
-
-    struct registro registro;
-    registro.nseq = 0;
+    struct registro aux;
+    aux.nseq = 0;
 
     for(bucket_size_t i = 0; i < hash->bucket_size; i++){
-        if(!fread(&aux, sizeof(struct indice), 1, hash->fp)) {
+        if(!fread(reg, sizeof(struct registro), 1, hash->fp)) {
         	fclose(hash->fp);
     		return 0;
         }
 
         // Se eh chave, achou o registro, que jah estah em reg
-        if(!strcmp(aux.key, chave)){
-            fseek(hash->fp, -(long int)sizeof(struct indice), SEEK_CUR);
-            fwrite(&vazio, sizeof(struct indice), 1, hash->fp);
-
-            FILE * f = fopen("arq_dados", "r+");
-	        if (f == NULL) return 0;
-	        
-	        if (tamanho_lista(aux.lista_rids) == 0) {
-	        	printf("LISTA VAZIA\n");
-	        	return 0;
-	        }
-	        encontrar_elemento(aux.lista_rids, 1, &offset);
-
-	        fseek(f, offset, SEEK_SET);
-	        fread(&reg, sizeof(struct registro), 1, f);
-	        fseek(f, offset, SEEK_SET);
-	        fwrite(&registro, sizeof(struct registro), 1, f);
-
-	        fclose(f);
+        if(reg->nseq == chave){
+            fseek(hash->fp, -(long int)sizeof(struct registro), SEEK_CUR);
+            fwrite(&aux, sizeof(struct registro), 1, hash->fp);
             fclose(hash->fp);
             return 1;
         }
@@ -353,7 +332,7 @@ int RMV_HASH(Hash hash, char * chave, Registro reg){
     
     fclose(hash->fp);
     return 0;
-}
+}*/
 
 // Busca nos dois arquivos para imprimir?
 int PRNT_HASH(Hash hash){
