@@ -98,6 +98,7 @@ int _NVLD_HASH(Hash hash){
 }
 
 int SRCH_HASH(Hash hash, char * chave, Registro reg){
+    // essa validação do reg ser nulo faz sentido? 
     if(_NVLD_HASH(hash) || chave == NULL || reg == NULL) return 0;
 
     struct indice idx;
@@ -109,6 +110,7 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
     if(hash->fp == NULL) return 0;
 
     directory_size_t bucket = _HASH_FUNCTION(chave, hash->dr_size);
+    printf("directory_size_t = %d", bucket);
 
     fseek(hash->fp, hash->dr[bucket].bucket, SEEK_SET);
 
@@ -117,6 +119,8 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
 
         // Se eh chave, achou o registro, que jah estah em reg
         if(!strcmp(idx.key, chave)) {
+            printf("idx.key = %s\n", idx.key);
+            printf("chave = %s\n", chave);
 	        FILE * f = fopen("arq_dados", "r");
 	        if (f == NULL) return 0;
 	        
@@ -129,7 +133,12 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
 	        printf("Offset = %ld\n", offset);
 
 	        fseek(f, offset, SEEK_SET);
-	        fread(&reg, sizeof(struct registro), 1, f);
+
+            // fixing -- to review
+            struct registro temp;
+	        fread(&temp, sizeof(struct registro), 1, f);
+            printf("TEMP: <%u, %s>!\n\n", temp.nseq, temp.text);
+            *reg = temp;
 
         	return 1;
         }

@@ -79,10 +79,9 @@ int main()
 			case 2:
 				printf("Entre com a chave: ");
                 scanf("%s", chave);
-                if(SRCH_HASH(h, chave, &reg))
-                    printf("Registro encontrado: <%u, %s>!\n\n", reg.nseq, reg.text);
-                else
-                    printf("Registro nao encontrado!\n\n");
+
+                if(SRCH_HASH(h, chave, &reg)) printf("Registro encontrado: <%u, %s>!\n\n", reg.nseq, reg.text);
+                else printf("Registro nao encontrado!\n\n");
                 
 	 			break;
 
