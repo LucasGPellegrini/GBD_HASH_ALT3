@@ -1,77 +1,164 @@
-#include "lista.h"
-#include <stdlib.h>
 #include <stdio.h>
-#include <locale.h>
+#include <stdlib.h>
+#include "lista.h"
 
-struct noLista{
-    long int info;
-    struct noLista* prox;
-};
+Lista * criar_lista(){
+  Lista * nova_lista = (Lista *)malloc(sizeof(Lista));
 
-int cria_lista(Lista* lst){
-    Lista cab = (Lista)malloc(sizeof(struct noLista));
-    if(cab == NULL) return 0;
+  if(nova_lista != NULL){
+    nova_lista->cabeca = NULL;
+    nova_lista->nro_elementos = 0;
+  }
 
-    cab->info = 0;
-    cab->prox = NULL;
-    *lst = cab;
-
-    return 1;
+  return nova_lista;
 }
 
-int tamanho_lista(Lista lst, long int* t){
-    if(lst == NULL) return 0;
-    *t = lst->info;
-    return 1;
+int tamanho_lista(Lista * lista){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  return lista->nro_elementos;
 }
 
-int lista_vazia(Lista lst){
-    if(lst == NULL) return 0;
-    return(lst->prox == NULL);
+int existe_elemento(Lista * lista, long int elemento){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  if(lista->nro_elementos < 1) return FALHA;
+  
+  for(No_lista * no_auxiliar = lista->cabeca; no_auxiliar->elemento != elemento; no_auxiliar = no_auxiliar->proximo)
+    if(no_auxiliar->proximo == NULL) return FALHA;
+  
+  return SUCESSO;
 }
 
-int insere_elem(Lista lst, long int v){
-    if(lst == NULL || v <= 0) return 0;
+int encontrar_elemento(Lista * lista, int posicao, long int * elemento){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
 
-    Lista no = (Lista)malloc(sizeof(struct noLista));
-    if(no == NULL) return 0;
+  if(posicao < 1 || posicao > lista->nro_elementos) return FALHA;
 
-    no->info = v;
-    
-    for(lst->info++; lst->prox != NULL && lst->prox->info < v; lst = lst->prox);
+  No_lista * no_auxiliar = lista->cabeca;
+  for(int i = 1; i < posicao; i++)
+      no_auxiliar = no_auxiliar->proximo;
 
-    if(lst->prox != NULL && lst->prox->info == v){
-        free(no);
-        return 1;
+  *elemento = no_auxiliar->elemento;
+
+  return SUCESSO;
+}
+
+int encontrar_posicao(Lista * lista, int * posicao, long int elemento){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  *posicao = 1;
+  for(No_lista * no_auxiliar = lista->cabeca; no_auxiliar->elemento != elemento; no_auxiliar = no_auxiliar->proximo){
+    if(no_auxiliar->proximo == NULL){
+      *posicao = -1;
+      return FALHA;
     }
-
-    no->prox = lst->prox;
-    lst->prox = no;
-    return 1;
-}
-
-int pertence(Lista lst, long int v){
-    for(lst = lst->prox; lst != NULL && lst->info != v; lst = lst->prox);
-    return (lst != NULL);
-}
-
-int imprimir_lista(Lista lst, FILE* fp){
-    if(lst == NULL) return 0;
-    setlocale(LC_ALL, "Portuguese_Brasil");
-    for(Lista aux = lst->prox; aux != NULL; aux = aux->prox)
-        if(aux->prox == NULL) fprintf(fp, "%ld\n", aux->info);
-        else fprintf(fp, "%d, ", aux->info);
-    return 1;
-}
-
-int apaga_lista(Lista* lst){
-    if(lst == NULL) return 0;
+    (*posicao)++;
+  }
     
-    Lista aux;
-    while(*lst != NULL){
-        aux = *lst;
-        *lst = aux->prox;
-        free(aux);
+  return SUCESSO;
+}
+
+int inserir_lista(Lista * lista, int posicao, long int elemento){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  if(posicao < 1 || posicao > lista->nro_elementos+1) return FALHA;
+
+  No_lista * novo_no = (No_lista *)malloc(sizeof(No_lista));
+  if(novo_no == NULL) return SEM_MEMORIA;
+  novo_no->elemento = elemento;
+  
+  if(posicao == 1){
+    novo_no->proximo = lista->cabeca;
+    lista->cabeca = novo_no;
+  }else{  
+    No_lista * no_auxiliar = lista->cabeca;
+    for(int i = 2; i < posicao; i++)
+      no_auxiliar = no_auxiliar->proximo;
+    
+    novo_no->proximo = no_auxiliar->proximo;
+    no_auxiliar->proximo = novo_no;
+  }
+  
+  lista->nro_elementos++;
+  
+  return SUCESSO;
+}
+
+int atualizar_lista(Lista * lista, int posicao, long int elemento){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  if(posicao < 1 || posicao > lista->nro_elementos) return FALHA;
+
+  No_lista * no_auxiliar = lista->cabeca;
+  for(int i = 1; i < posicao; i++)
+    no_auxiliar = no_auxiliar->proximo;
+    
+  no_auxiliar->elemento = elemento;
+  
+  return SUCESSO;
+}
+
+int remover_lista(Lista * lista, int posicao){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  if(posicao < 1 || posicao > lista->nro_elementos) return FALHA;
+
+  No_lista * no_destruir = lista->cabeca;
+  
+  if(posicao == 1)
+    lista->cabeca = lista->cabeca->proximo;
+  else{
+    No_lista * no_anterior;
+    for(int i = 1; i < posicao; i++){
+      no_anterior = no_destruir;
+      no_destruir = no_destruir->proximo;
     }
-    return 1;
+    
+    no_anterior->proximo = no_destruir->proximo;
+  }
+  
+  free(no_destruir);
+  lista->nro_elementos--;
+  
+  return SUCESSO;
+}
+
+int imprimir_lista(Lista * lista){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+  
+  for(No_lista * no_auxiliar = lista->cabeca; no_auxiliar != NULL; no_auxiliar = no_auxiliar->proximo)
+    printf("[ %ld ]  ->  ", no_auxiliar->elemento);
+  printf("NULL\n");
+
+  return SUCESSO;
+}
+
+int esvaziar_lista(Lista * lista){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  if(lista->nro_elementos < 1) return FALHA;
+
+  while(lista->nro_elementos > 0)
+    remover_lista(lista, 1);
+
+  return SUCESSO;
+}
+
+int destruir_lista(Lista * lista){
+  if(lista == NULL) return PONTEIRO_INVALIDO;
+
+  if(lista->nro_elementos > 0){
+    No_lista * no_auxiliar = lista->cabeca;
+    while(no_auxiliar != NULL){
+      No_lista * no_destruir = no_auxiliar;
+      no_auxiliar = no_auxiliar->proximo;
+      
+      free(no_destruir);
+    }
+  }
+  
+  free(lista);
+  
+  return SUCESSO;
 }

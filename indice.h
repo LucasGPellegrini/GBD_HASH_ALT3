@@ -10,7 +10,7 @@
 // E uma lista com o offset de cada registro no arquivo de dados
 struct indice{
 	char key[TEXT_SIZE];
-	Lista lista_rids;
+	Lista * lista_rids;
 };
 
 typedef struct indice* Idc;
