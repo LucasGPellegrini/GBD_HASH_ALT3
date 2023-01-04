@@ -51,7 +51,7 @@ int CRT_HASH(Hash* hash_ptr, depth_t pg_inicial, char* hdir){
     }
 
     hash->fname = malloc(MAX_REG * sizeof(char));
-    if(hash->dr == NULL){
+    if(hash->fname == NULL){
         free(hash);
         hash = NULL;
         return 0;
@@ -70,7 +70,7 @@ int CRT_HASH(Hash* hash_ptr, depth_t pg_inicial, char* hdir){
     long int fp_pointer;
 
     struct indice reg;
-    reg.key = '0';
+  	strcpy(reg.key, "0");
 
     for(directory_size_t i = 0; i < hash->dr_size; i++){
         fp_pointer = ftell(hash->fp);
@@ -118,7 +118,7 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
         	//	ler o(s) registros de acordo com o offset
         	//	e gravar no registro reg;
         	//	fechar o arquivo de dados.
-        	print("falta coisa rapaz\n");
+        	printf("falta coisa rapaz\n");
         	return 1;
         }
     }
@@ -309,7 +309,7 @@ int PRNT_HASH(Hash hash){
     if(hash->fp == NULL) return 0;
 
     printf("Tamanho diretorio = %u\n", hash->dr_size);
-    printf("Buckets instanciados = %u\n", hash->bucket_number);
+    printf("Buckets instanciados = %ld\n", hash->bucket_number);
     printf("Numero de registro por bucket = %u\n", hash->bucket_size);
     printf("Profundidade global = %u\n", hash->pg);
 
@@ -318,7 +318,7 @@ int PRNT_HASH(Hash hash){
     struct registro aux;
 
     for(directory_size_t i = 0; i < hash->dr_size; i++){
-        printf("(B%u, %u):", hash->dr[i].bucket, hash->dr[i].pl);
+        printf("(B%ld, %u):", hash->dr[i].bucket, hash->dr[i].pl);
 
         fseek(hash->fp, hash->dr[i].bucket, SEEK_SET);
 
