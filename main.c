@@ -76,7 +76,7 @@ int main()
                     printf("Houve algum erro!\n\n");
                 break;
 
-			case 2:
+			/*case 2:
 				printf("Entre com a chave: ");
                 scanf("%u", &chave);
                 if(SRCH_HASH(h, chave, &reg))
@@ -84,14 +84,14 @@ int main()
                 else
                     printf("Registro nao encontrado!\n\n");
                 
-	 			break;
+	 			break;*/
 
             case 3:
                 printf("Entre com o registro.\n");
                 printf("Entre com a chave: ");
                 scanf("%u", &reg.nseq);
                 printf("Entre com o texto: ");
-                scanf("%s", &reg.text);
+                scanf("%s", reg.text);
 
                 if(INST_HASH(h, &reg))
                     printf("Registro inserido com sucesso!\n\n");
@@ -100,7 +100,7 @@ int main()
 
                 break;
 
-			case 4:
+			/*case 4:
 				printf("Entre com a chave: ");
                 scanf("%u", &chave);
                 if(RMV_HASH(h, chave, &reg))
@@ -108,7 +108,7 @@ int main()
                 else
                     printf("Registro nao encontrado!\n\n");
                 
-	 			break;
+	 			break;*/
 
             case 5:
                 if(!PRNT_HASH(h)) printf("Houve erro ao imprimir Hash!\n\n");

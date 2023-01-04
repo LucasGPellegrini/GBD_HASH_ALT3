@@ -1,5 +1,6 @@
 #include "hash.h"
 #include "indice.h"
+#include "lista.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +23,7 @@ directory_size_t _HASH_FUNCTION(char * chave, directory_size_t N){
     unsigned long hash = 5381;
     int c;
 
-    while (c = *str++)
+    while (c = *chave++)
         hash = ((hash << 5) + hash) + c;
 
     return hash % N;
@@ -69,13 +70,13 @@ int CRT_HASH(Hash* hash_ptr, depth_t pg_inicial, char* hdir){
     rewind(hash->fp);
     long int fp_pointer;
 
-    struct indice reg;
-  	strcpy(reg.key, "0");
+    struct indice ind;
+  	strcpy(ind.key, "");
 
     for(directory_size_t i = 0; i < hash->dr_size; i++){
         fp_pointer = ftell(hash->fp);
         for(directory_size_t j = 0; j < hash->bucket_size; j++){
-            if(!fwrite(&reg, sizeof(struct indice), 1, hash->fp)){
+            if(!fwrite(&ind, sizeof(struct indice), 1, hash->fp)){
                 fclose(hash->fp);
                 free(hash->dr);
                 free(hash);
@@ -97,7 +98,7 @@ int _NVLD_HASH(Hash hash){
     return(hash == NULL || hash->dr == NULL || hash->pg <= 0 || hash->fname == NULL);
 }
 
-int SRCH_HASH(Hash hash, char * chave, Registro reg){
+/*int SRCH_HASH(Hash hash, char * chave, Registro reg){
     if(_NVLD_HASH(hash) || chave == 0 || reg == NULL) return 0;
 
     struct indice idx;
@@ -113,7 +114,7 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
     for(bucket_size_t i = 0; i < hash->bucket_size; i++){
         if(!fread(&idx, sizeof(struct indice), 1, hash->fp)) return 0;
         // Se eh chave, achou o registro, que jah estah em reg
-        if(!strcmp(idx->key, chave)) {
+        if(!strcmp(idx.key, chave)) {
         	//Precisa abrir o arquivo de dados (registros)
         	//	ler o(s) registros de acordo com o offset
         	//	e gravar no registro reg;
@@ -126,7 +127,7 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
     fclose(hash->fp);
 
     return 0;
-}
+}*/
 
 int INST_HASH(Hash hash, Registro reg){
     if(_NVLD_HASH(hash) || reg == NULL) return 0;
@@ -142,11 +143,11 @@ int INST_HASH(Hash hash, Registro reg){
 
     struct indice aux;
 
-    // Vai a procura de um slot vazio no bucket original da hash (nseq == 0)
+    // Vai a procura de um slot vazio no bucket original da hash
     bucket_size_t original;
     for(original = 0; original < hash->bucket_size; original++){
         fread(&aux, sizeof(struct indice), 1, hash->fp);
-        if(!strcmp(aux.key == '0')) break;
+        if(!strcmp(aux.key, "")) break;
     }
 
     // Bucket original nao-cheio (insercao tranquila)
@@ -155,19 +156,28 @@ int INST_HASH(Hash hash, Registro reg){
         // Busca pra ver se já existe essa chave
         // Se existe, adiciona na lista de rids o offset do registro no arquivo de dados
         // Caso contrário: Cria o indice para inserir
-        Idc ind;
-        strcpy(ind->key, reg->text);
-        ind->lista_rids = (int *)malloc(sizeof(int));
-        //ind->lista_rids[0] = ftell no final do arquivos de dados
-        //fwrite(ind, sizeof(struct indice), 1, hash->fp);
-        // Abre arquivo de dados e insere o registro no final. Fecha
-        // PRECISA ALTERAR O OUTRO CASO TAMBÉM. (ELSE ABAIXO)
-    }else{
+        strcpy(aux.key, reg->text);
+        Lista lrid;
+        cria_lista(&lrid);
+        aux.lista_rids = lrid;
+
+        FILE * f = fopen("arq_dados", "a+");
+        if (f == NULL) return -1;
+        long int offset = ftell(f);
+        insere_elem(lrid, offset);
+
+       	aux.lista_rids = lrid;
+
+        fwrite(&aux, sizeof(struct indice), 1, hash->fp);
+        fwrite(reg, sizeof(struct registro), 1, f);
+        fclose(f);
+
+    }/*else{
 
         // Caso contrario, bucket original cheio
 
         struct registro buffer[hash->bucket_size];
-        aux.nseq = 0;
+        ind.key = 0;
 
         // Precisa duplicar diretorio (pg == pl)
         if(hash->pg == hash->dr[bucket].pl){
@@ -260,14 +270,14 @@ int INST_HASH(Hash hash, Registro reg){
 
         // Como criou um bucket no final, bucket_number++
         hash->bucket_number++;
-    }
+    }*/
 	
     fclose(hash->fp);
     return 1;
 }
 
 // Precisa remover nos dois arquivos, caso encontrar o registro.
-int RMV_HASH(Hash hash, entry_number_t chave, Registro reg){
+/*int RMV_HASH(Hash hash, entry_number_t chave, Registro reg){
     if(_NVLD_HASH(hash) || reg == NULL) return 0;
 
     // Abre o arquivo hash
@@ -298,7 +308,7 @@ int RMV_HASH(Hash hash, entry_number_t chave, Registro reg){
     
     fclose(hash->fp);
     return 0;
-}
+}*/
 
 // Busca nos dois arquivos para imprimir?
 int PRNT_HASH(Hash hash){
@@ -316,6 +326,7 @@ int PRNT_HASH(Hash hash){
     printf("Conteudo do diretorio:\n\n");    
 
     struct registro aux;
+    struct indice ind;
 
     for(directory_size_t i = 0; i < hash->dr_size; i++){
         printf("(B%ld, %u):", hash->dr[i].bucket, hash->dr[i].pl);
@@ -323,10 +334,10 @@ int PRNT_HASH(Hash hash){
         fseek(hash->fp, hash->dr[i].bucket, SEEK_SET);
 
         for(bucket_size_t j = 0; j < hash->bucket_size; j++){
-            fread(&aux, sizeof(struct registro), 1, hash->fp);
+            fread(&ind, sizeof(struct indice), 1, hash->fp);
 
-            if(aux.nseq != 0) printf(" <%u, %s> |", aux.nseq, aux.text);
-            else printf(" <%u> |", aux.nseq);
+            if(strcmp(ind.key, "")) printf(" <%s> |", ind.key);
+            else printf(" <%s> |", ind.key);
         }
 
         printf("\n\n");
