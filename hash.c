@@ -126,6 +126,7 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
 	        }
 
 	        encontrar_elemento(idx.lista_rids, 1, &offset);
+	        printf("Offset = %ld\n", offset);
 
 	        fseek(f, offset, SEEK_SET);
 	        fread(&reg, sizeof(struct registro), 1, f);
@@ -168,15 +169,16 @@ int INST_HASH(Hash hash, Registro reg){
 
         FILE * f = fopen("arq_dados", "a+");
         if (f == NULL) return -1;
+        fseek(f, 0, SEEK_END);
         long int offset = ftell(f);
+        printf("Offset = %ld\n", offset);
         inserir_lista(aux.lista_rids, tamanho_lista(aux.lista_rids)+1, offset);
-        printf("TAMANHO: %d\n", tamanho_lista(aux.lista_rids));
 
         fwrite(&aux, sizeof(struct indice), 1, hash->fp);
         fwrite(reg, sizeof(struct registro), 1, f);
         fclose(f);
 
-    }else{
+    } else{
 
         // Caso contrario, bucket original cheio
 
@@ -301,7 +303,7 @@ int INST_HASH(Hash hash, Registro reg){
 }
 
 // Precisa remover nos dois arquivos, caso encontrar o registro.
-/*int RMV_HASH(Hash hash, entry_number_t chave, Registro reg){
+int RMV_HASH(Hash hash, char * chave, Registro reg){
     if(_NVLD_HASH(hash) || reg == NULL) return 0;
 
     // Abre o arquivo hash
@@ -312,27 +314,41 @@ int INST_HASH(Hash hash, Registro reg){
 
     fseek(hash->fp, hash->dr[bucket].bucket, SEEK_SET);
 
-    struct registro aux;
-    aux.nseq = 0;
+    struct indice aux;
+    struct indice vazio;
+    strcpy(vazio.key, "");
+    long int offset;
 
     for(bucket_size_t i = 0; i < hash->bucket_size; i++){
-        if(!fread(reg, sizeof(struct registro), 1, hash->fp)) {
+        if(!fread(&aux, sizeof(struct indice), 1, hash->fp)) {
         	fclose(hash->fp);
     		return 0;
         }
 
         // Se eh chave, achou o registro, que jah estah em reg
-        if(reg->nseq == chave){
-            fseek(hash->fp, -(long int)sizeof(struct registro), SEEK_CUR);
-            fwrite(&aux, sizeof(struct registro), 1, hash->fp);
-            fclose(hash->fp);
-            return 1;
+        if(!strcmp(aux.key, chave)) {
+        	fseek(hash->fp, -(long int)sizeof(struct indice), SEEK_CUR);
+            fwrite(&vazio, sizeof(struct indice), 1, hash->fp);
+
+	        FILE * f = fopen("arq_dados", "r");
+	        if (f == NULL) return 0;
+	        
+	        if (tamanho_lista(aux.lista_rids) == 0) {
+	        	printf("LISTA VAZIA\n");
+	        	return 0;
+	        }
+
+	        encontrar_elemento(aux.lista_rids, 1, &offset);
+
+	        fseek(f, offset, SEEK_SET);
+	        fread(&reg, sizeof(struct registro), 1, f);
+        	return 1;
         }
     }
     
     fclose(hash->fp);
     return 0;
-}*/
+}
 
 // Busca nos dois arquivos para imprimir?
 int PRNT_HASH(Hash hash){

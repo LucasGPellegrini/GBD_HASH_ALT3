@@ -100,15 +100,15 @@ int main()
 
                 break;
 
-			/*case 4:
+			case 4:
 				printf("Entre com a chave: ");
-                scanf("%u", &chave);
+                scanf("%s", chave);
                 if(RMV_HASH(h, chave, &reg))
                     printf("Registro removido: <%u, %s>!\n\n", reg.nseq, reg.text);
                 else
                     printf("Registro nao encontrado!\n\n");
                 
-	 			break;*/
+	 			break;
 
             case 5:
                 if(!PRNT_HASH(h)) printf("Houve erro ao imprimir Hash!\n\n");
