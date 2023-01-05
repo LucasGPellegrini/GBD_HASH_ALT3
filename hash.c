@@ -98,7 +98,6 @@ int _NVLD_HASH(Hash hash){
 }
 
 int SRCH_HASH(Hash hash, char * chave, Registro reg){
-    // essa validação do reg ser nulo faz sentido? 
     if(_NVLD_HASH(hash) || chave == NULL || reg == NULL) return 0;
 
     struct indice idx;
@@ -110,7 +109,6 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
     if(hash->fp == NULL) return 0;
 
     directory_size_t bucket = _HASH_FUNCTION(chave, hash->dr_size);
-    printf("directory_size_t = %d", bucket);
 
     fseek(hash->fp, hash->dr[bucket].bucket, SEEK_SET);
 
@@ -119,8 +117,6 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
 
         // Se eh chave, achou o registro, que jah estah em reg
         if(!strcmp(idx.key, chave)) {
-            printf("idx.key = %s\n", idx.key);
-            printf("chave = %s\n", chave);
 	        FILE * f = fopen("arq_dados", "r");
 	        if (f == NULL) return 0;
 	        
@@ -130,14 +126,10 @@ int SRCH_HASH(Hash hash, char * chave, Registro reg){
 	        }
 
 	        encontrar_elemento(idx.lista_rids, 1, &offset);
-	        printf("Offset = %ld\n", offset);
 
 	        fseek(f, offset, SEEK_SET);
-
-            // fixing -- to review
-            struct registro temp;
-	        fread(&temp, sizeof(struct registro), 1, f);
-            printf("TEMP: <%u, %s>!\n\n", temp.nseq, temp.text);
+	        struct registro temp;
+            fread(&temp, sizeof(struct registro), 1, f);
             *reg = temp;
 
         	return 1;
@@ -180,7 +172,6 @@ int INST_HASH(Hash hash, Registro reg){
         if (f == NULL) return -1;
         fseek(f, 0, SEEK_END);
         long int offset = ftell(f);
-        printf("Offset = %ld\n", offset);
         inserir_lista(aux.lista_rids, tamanho_lista(aux.lista_rids)+1, offset);
 
         fwrite(&aux, sizeof(struct indice), 1, hash->fp);
@@ -319,39 +310,51 @@ int RMV_HASH(Hash hash, char * chave, Registro reg){
     hash->fp = fopen(hash->fname, "r+");
     if(hash->fp == NULL) return 0;
 
-    bucket_t bucket = _HASH_FUNCTION(chave, hash->dr_size);
+    struct indice idx;
+    idx.lista_rids = criar_lista();
+    long int offset;
+
+
+    directory_size_t bucket = _HASH_FUNCTION(chave, hash->dr_size);
 
     fseek(hash->fp, hash->dr[bucket].bucket, SEEK_SET);
 
-    struct indice aux;
-    struct indice vazio;
-    strcpy(vazio.key, "");
-    long int offset;
-
     for(bucket_size_t i = 0; i < hash->bucket_size; i++){
-        if(!fread(&aux, sizeof(struct indice), 1, hash->fp)) {
-        	fclose(hash->fp);
-    		return 0;
-        }
+        if(!fread(&idx, sizeof(struct indice), 1, hash->fp)) return 0;
 
         // Se eh chave, achou o registro, que jah estah em reg
-        if(!strcmp(aux.key, chave)) {
-        	fseek(hash->fp, -(long int)sizeof(struct indice), SEEK_CUR);
-            fwrite(&vazio, sizeof(struct indice), 1, hash->fp);
+        if(!strcmp(idx.key, chave)) {
+            FILE * f = fopen("arq_dados", "r");
+            if (f == NULL) return 0;
+            
+            if (tamanho_lista(idx.lista_rids) == 0) {
+                printf("LISTA VAZIA\n");
+                return 0;
+            }
 
-	        FILE * f = fopen("arq_dados", "r");
-	        if (f == NULL) return 0;
-	        
-	        if (tamanho_lista(aux.lista_rids) == 0) {
-	        	printf("LISTA VAZIA\n");
-	        	return 0;
-	        }
+            encontrar_elemento(idx.lista_rids, 1, &offset);
 
-	        encontrar_elemento(aux.lista_rids, 1, &offset);
+            // Lê o registro a ser removido
+            fseek(f, offset, SEEK_SET);
+            struct registro temp;
+            fread(&temp, sizeof(struct registro), 1, f);
+            *reg = temp;
 
-	        fseek(f, offset, SEEK_SET);
-	        fread(&reg, sizeof(struct registro), 1, f);
-        	return 1;
+            // Remove do arquivo de dados
+            fseek(f, offset, SEEK_SET);
+            temp.nseq = 0;
+            strcpy(temp.text, "");
+            fwrite(&temp, sizeof(struct registro), 1, f);
+            fclose(f);
+
+            // Remove dos índices
+            struct indice aux;
+            strcpy(aux.key, "");
+            fseek(hash->fp, -(long int)sizeof(struct indice), SEEK_CUR);
+            fwrite(&aux, sizeof(struct indice), 1, hash->fp);
+            fclose(hash->fp);
+
+            return 1;
         }
     }
     
