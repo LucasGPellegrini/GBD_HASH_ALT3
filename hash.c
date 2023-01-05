@@ -154,7 +154,6 @@ int SRCH_INDC(Hash hash, char * chave, Idc indice) {
 
     struct indice idx;
     idx.lista_rids = criar_lista();
-    long int offset;
 
     // Abre o arquivo hash
     hash->fp = fopen(hash->fname, "r");
@@ -223,7 +222,6 @@ int INST_DUPP(Hash hash, Registro reg, Idc idx_existe) {
         FILE * f = fopen("arq_dados", "a+");
         if (f == NULL) return -1;
         fseek(f, 0, SEEK_END);
-        long int offset = ftell(f);
 
         fwrite(&indc, sizeof(struct indice), 1, hash->fp);
         fwrite(reg, sizeof(struct registro), 1, f);
@@ -278,7 +276,7 @@ int INST_HASH(Hash hash, Registro reg){
         fwrite(reg, sizeof(struct registro), 1, f);
         fclose(f);
 
-    } else{
+    }else{
 
         // Caso contrario, bucket original cheio
 
@@ -477,7 +475,6 @@ int PRNT_HASH(Hash hash){
 
     printf("Conteudo do diretorio:\n\n");    
 
-    struct registro aux;
     struct indice ind;
 
     for(directory_size_t i = 0; i < hash->dr_size; i++){

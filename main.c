@@ -46,7 +46,7 @@ int main()
 	    directory_t dir_t;
 	    fread(&dir_t, sizeof(directory_t), 1, dir);
 
-	   FLAG = RECUPERA_DIR(&h, tam, bs, bn, depth, dir_t, "arquivo");
+	  	FLAG = RECUPERA_DIR(&h, tam, bs, bn, depth, dir_t, "arquivo");
     }
 
 	do {
