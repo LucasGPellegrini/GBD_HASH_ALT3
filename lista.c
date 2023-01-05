@@ -126,10 +126,15 @@ int remover_lista(Lista * lista, int posicao){
 
 int imprimir_lista(Lista * lista){
   if(lista == NULL) return PONTEIRO_INVALIDO;
-  
-  for(No_lista * no_auxiliar = lista->cabeca; no_auxiliar != NULL; no_auxiliar = no_auxiliar->proximo)
-    printf("[ %ld ]  ->  ", no_auxiliar->elemento);
-  printf("NULL\n");
+
+  printf("[");
+  for(No_lista * no_auxiliar = lista->cabeca; no_auxiliar != NULL; no_auxiliar = no_auxiliar->proximo){
+    printf("%ld", no_auxiliar->elemento);
+    if(no_auxiliar->proximo != NULL) {
+      printf(", ");
+    }
+  }
+  printf("] ");
 
   return SUCESSO;
 }

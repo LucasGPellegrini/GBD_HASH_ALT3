@@ -33,7 +33,7 @@ struct hash{
 typedef struct hash* Hash;
 
 int CRT_HASH(Hash* hash_ptr, depth_t pg_inicial, char* hdir);
-int SRCH_HASH(Hash hash, char * chave, Registro reg);
+int SRCH_HASH(Hash hash, char * chave, Registro * reg, int * quantidade);
 int INST_HASH(Hash hash, Registro reg);
 int RMV_HASH(Hash hash, char * chave, Registro reg);
 int PRNT_HASH(Hash hash);

@@ -23,8 +23,9 @@
 int main()
 {
 	struct registro reg;
+	Registro regs;
     Hash h;
-	int op;
+	int op, qtd;
     depth_t pg_inicial;
     char * chave;
 
@@ -80,7 +81,11 @@ int main()
 				printf("Entre com a chave: ");
                 scanf("%s", chave);
 
-                if(SRCH_HASH(h, chave, &reg)) printf("Registro encontrado: <%u, %s>!\n\n", reg.nseq, reg.text);
+                if(SRCH_HASH(h, chave, &regs, &qtd)) {
+                	for(int i = 0; i < qtd; i++)
+                		printf("Registro encontrado: <%u, %s>!\n", regs[i].nseq, regs[i].text);
+                	printf("\n");
+                }
                 else printf("Registro nao encontrado!\n\n");
                 
 	 			break;
